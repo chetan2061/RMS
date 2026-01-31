@@ -1,0 +1,367 @@
+/* 
+   Cups and Mugs - Premium Theme
+   Restored aesthetics with clean, understandable code.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@700&display=swap');
+
+:root {
+    /* Color Palette */
+    --primary: #4e342e;     /* Dark Coffee */
+    --primary-light: #6f4e37; /* Milk Coffee */
+    --accent: #d35400;      /* Burnt Orange */
+    --gold: #f1c40f;        /* Star/Highlight */
+    --bg-light: #fdfbf7;    /* Cream/Paper */
+    --white: #ffffff;
+    --text-dark: #2c3e50;
+    --text-light: #7f8c8d;
+    
+    /* Effects */
+    --shadow: 0 10px 20px rgba(0,0,0,0.08);
+    --shadow-hover: 0 15px 30px rgba(0,0,0,0.15);
+    --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+h1, h2, h3, .logo {
+    font-family: 'Playfair Display', serif; /* Premium serif for headings */
+}
+
+/* --- Layout & Utilities --- */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+button { cursor: pointer; transition: 0.3s; }
+
+/* --- Navigation --- */
+.navbar {
+    background: var(--white);
+    padding: 15px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Soft shadow */
+    position: sticky; top: 0; z-index: 1000;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary);
+    letter-spacing: 1px;
+}
+
+.nav-links a {
+    margin-left: 25px;
+    font-weight: 500;
+    color: var(--text-dark);
+    position: relative;
+}
+
+/* Hover underline effect */
+.nav-links a::after {
+    content: ''; position: absolute; width: 0; height: 2px;
+    bottom: -5px; left: 0; background-color: var(--primary);
+    transition: width 0.3s;
+}
+.nav-links a:hover::after { width: 100%; }
+
+.badge {
+    background: var(--accent); color: white;
+    padding: 2px 8px; border-radius: 50%;
+    font-size: 0.75rem; vertical-align: top;
+}
+
+/* --- Hero Section --- */
+.hero {
+    text-align: center;
+    padding: 100px 20px;
+    background: linear-gradient(135deg, rgba(78, 52, 46, 0.9), rgba(111, 78, 55, 0.8)), url('../uploads/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    border-radius: var(--radius);
+    margin: 20px auto 40px;
+    box-shadow: var(--shadow);
+}
+
+.hero h1 { font-size: 3.5rem; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.hero p { font-size: 1.2rem; font-weight: 300; letter-spacing: 1px; }
+
+/* --- Menu Grid --- */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive Grid */
+    gap: 30px;
+}
+
+/* --- Product Cards --- */
+.menu-item {
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid rgba(0,0,0,0.02);
+}
+
+.menu-item:hover {
+    transform: translateY(-8px); /* Lift up effect */
+    box-shadow: var(--shadow-hover);
+}
+
+.menu-item img {
+    width: 100%; height: 220px;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.menu-item:hover img { transform: scale(1.05); } /* Subtle zoom */
+
+.item-details { padding: 25px; }
+
+.item-details h3 {
+    color: var(--primary);
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+}
+
+.item-details p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.price-action {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px dashed #eee;
+    padding-top: 15px;
+}
+
+.price {
+    font-size: 1.3rem; font-weight: bold;
+    color: var(--primary-light);
+}
+
+.btn-add {
+    background: linear-gradient(45deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(111, 78, 55, 0.3);
+}
+
+.btn-add:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(111, 78, 55, 0.4);
+}
+
+/* --- Forms (Signup, Login, Generic) --- */
+.auth-container {
+    display: flex; justify-content: center; align-items: center;
+    min-height: 80vh; background: #eee;
+}
+
+.auth-form {
+    background: white; padding: 40px;
+    width: 100%; max-width: 450px;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border-top: 5px solid var(--primary); /* Accent Top */
+}
+
+.auth-form h2 {
+    text-align: center; color: var(--primary);
+    margin-bottom: 30px;
+}
+
+.auth-form input, .auth-form select {
+    width: 100%; padding: 12px 15px; margin-bottom: 20px;
+    border: 1px solid #ddd; border-radius: 8px;
+    background: #f9f9f9;
+}
+
+.auth-form input:focus {
+    border-color: var(--primary-light);
+    background: white; outline: none;
+}
+
+.auth-form button {
+    width: 100%; background: var(--primary);
+    color: white; padding: 14px;
+    border-radius: 8px; font-size: 1rem; font-weight: bold;
+}
+
+/* --- Admin Panel Layout (Sidebar) --- */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background: var(--text-dark); /* Slate/Dark */
+    color: white;
+    flex-shrink: 0;
+    display: flex; flex-direction: column;
+}
+
+.sidebar-brand {
+    padding: 25px;
+    background: rgba(0,0,0,0.1);
+    text-align: center;
+}
+.sidebar-brand h2 { margin: 0; font-size: 1.5rem; }
+
+.sidebar-menu {
+    list-style: none;
+    padding: 20px 0;
+}
+
+.sidebar-menu li a {
+    display: block;
+    padding: 15px 25px;
+    color: #bdc3c7;
+    font-size: 1.05rem;
+    transition: 0.3s;
+    border-left: 4px solid transparent;
+}
+
+.sidebar-menu li a:hover, 
+.sidebar-menu li a.active {
+    background: rgba(255,255,255,0.05);
+    color: white;
+    border-left-color: var(--accent);
+}
+
+.sidebar-menu li a i {
+    width: 25px; margin-right: 10px; text-align: center;
+}
+
+.main-content {
+    flex-grow: 1;
+    background: #f4f6f9;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.main-header {
+    margin-bottom: 30px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+/* Stat Box Fix for Grid */
+.stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px; margin-bottom: 40px;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white; padding: 40px;
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+.stat-box p { margin: 0; font-size: 1rem; opacity: 0.9; }
+.stat-box h2 { font-size: 3rem; margin: 10px 0 0; }
+
+/* Card */
+.card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* Review List */
+.review-list { max-height: 300px; overflow-y: auto; }
+.review-item { padding: 15px; border-bottom: 1px solid #eee; }
+.star { color: var(--gold); }
+
+/* Tables */
+table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    background: white; border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+}
+
+th {
+    background: #f4f6f9; padding: 18px;
+    text-align: left; font-weight: 600; color: var(--text-dark);
+    border-bottom: 2px solid #e0e0e0;
+}
+
+td { padding: 18px; border-bottom: 1px solid #eee; vertical-align: middle; }
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    .navbar { flex-direction: column; gap: 15px; padding: 20px; }
+    .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+    .nav-links a { margin: 0; }
+    
+    .hero { padding: 60px 20px; }
+    .hero h1 { font-size: 2.2rem; }
+    
+    .menu-grid { grid-template-columns: 1fr; } /* Single column */
+    
+    /* Table scroll */
+    .container { overflow-x: hidden; }
+    table { display: block; overflow-x: auto; white-space: nowrap; }
+    
+    .dashboard-container { flex-direction: column; }
+    .sidebar { width: 100%; min-height: auto; }
+    .sidebar-menu { display: flex; overflow-x: auto; padding: 10px; }
+    .sidebar-menu li a { padding: 10px 15px; white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; }
+    .sidebar-menu li a:hover, .sidebar-menu li a.active { border-bottom-color: var(--accent); }
+    
+    .main-content { padding: 15px; }
+}
+
+/* --- JS Enhancement Styles --- */
+
+/* Navbar Scrolled State */
+.navbar.scrolled {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    padding: 10px 5%; /* Shrink slightly */
+    transition: all 0.3s ease;
+}
+
+/* Fade In Animation */
+.fade-in-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Additional Hover Polish */
+.btn-add {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Form Focus Effects */
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+}
