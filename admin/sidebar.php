@@ -19,8 +19,8 @@
             </a>
         </li>
         <li>
-            <a href="profile.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : ''; ?>">
-                <i class="fas fa-user"></i> Profile
+            <a href="index.php?logout=1" onclick="return confirm('Logout?')" style="color: #e74c3c;">
+                <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </li>
         <li>

@@ -1,187 +1,175 @@
 <?php
-/**
- * CART.PHP - Shopping Cart and Checkout Page
- * Purpose: Display cart items, allow removal, and handle order placement
- * Flow: View cart → Remove items (optional) → Fill checkout form → Place order
- */
-
-// ============================================
-// INITIALIZE SESSION AND DATABASE
-// ============================================
+// Cart and checkout management
 session_start();
 require 'includes/db.php';
 
-// ============================================
-// HANDLE REMOVE ITEM FROM CART
-// ============================================
+// Handle item removal
 if (isset($_GET['remove'])) {
-    unset($_SESSION['cart'][$_GET['remove']]);  // Remove item from cart
-    header('Location: cart.php');  // Refresh page
+    unset($_SESSION['cart'][$_GET['remove']]);
+    header('Location: cart.php');
     exit;
 }
 
-// ============================================
-// HANDLE ORDER PLACEMENT
-// ============================================
-if (isset($_POST['order'])) {
-    $items = '';  // String to store order details
-    $total = 0;   // Total price
-    
-    // Get cart items from database
-    if (!empty($_SESSION['cart'])) {
-        $ids = array_keys($_SESSION['cart']);  // Get all product IDs in cart
-        
-        // Create SQL with placeholders for each ID
-        $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN (" . implode(',', array_fill(0, count($ids), '?')) . ")");
-        $stmt->execute($ids);
-        
-        // Build order details and calculate total
-        foreach ($stmt->fetchAll() as $p) {
-            $qty = $_SESSION['cart'][$p['id']];  // Get quantity from cart
-            $items .= $p['name'] . ' x' . $qty . ', ';  // Add to order details string
-            $total += $p['price'] * $qty;  // Add to total
-        }
-    }
-    
-    // Insert order into database
-    $user_id = $_SESSION['user_id'] ?? null;  // Get user ID if logged in
-    $pdo->prepare("INSERT INTO orders (user_id, customer_name, customer_phone, delivery_location, total_price, order_details, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')")
-        ->execute([$user_id, $_POST['name'], $_POST['phone'], $_POST['address'], $total, $items]);
-    
-    // Clear cart and show success
-    unset($_SESSION['cart']);
-    $done = 1;  // Flag to show success message
-}
+// Initialize variables
+$error = '';
+$name = '';
+$phone = '';
+$address = '';
+$done = false;
 
-// ============================================
-// GET CART ITEMS FOR DISPLAY
-// ============================================
-$cart = [];  // Array to store cart items
-$total = 0;  // Total price
+// Fetch Cart Data (Unified Logic)
+$cart_items = [];
+$total_price = 0;
 
 if (!empty($_SESSION['cart'])) {
-    $ids = array_keys($_SESSION['cart']);  // Get all product IDs
+    $ids = array_keys($_SESSION['cart']);
+    // Ensure ids are integers to be safe
+    $ids = array_filter($ids, 'is_numeric');
     
-    // Fetch products from database
-    $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN (" . implode(',', array_fill(0, count($ids), '?')) . ")");
-    $stmt->execute($ids);
-    
-    // Build cart array with product details
-    foreach ($stmt->fetchAll() as $p) {
-        $qty = $_SESSION['cart'][$p['id']];  // Get quantity
-        $cart[] = [
-            'id' => $p['id'],
-            'name' => $p['name'],
-            'price' => $p['price'],
-            'qty' => $qty
-        ];
-        $total += $p['price'] * $qty;  // Calculate total
+    if (!empty($ids)) {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
+        $stmt->execute($ids);
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($products as $p) {
+            $qty = $_SESSION['cart'][$p['id']] ?? 1;
+            $line_total = $p['price'] * $qty;
+            
+            $cart_items[] = [
+                'id' => $p['id'],
+                'name' => $p['name'],
+                'price' => $p['price'],
+                'qty' => $qty,
+                'line_total' => $line_total
+            ];
+            $total_price += $line_total;
+        }
+    }
+}
+
+// Process Order Submission
+if (isset($_POST['order'])) {
+    $name = trim($_POST['name']);
+    $phone = trim($_POST['phone']);
+    $address = trim($_POST['address']);
+
+    // Input Validation
+    if (empty($cart_items)) {
+        $error = "Your cart is empty.";
+    } elseif (empty($name)) {
+        $error = "Name is required.";
+    } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
+        $error = "Name must contain only letters and spaces.";
+    } elseif (!is_numeric($phone) || strlen($phone) < 10) {
+        $error = "Please enter a valid phone number (10+ digits).";
+    } elseif (empty($address)) {
+        $error = "Delivery address is required.";
+    } else {
+        // Prepare Order Details String
+        $details = "";
+        foreach ($cart_items as $item) {
+            $details .= "{$item['name']} x{$item['qty']}, ";
+        }
+        $details = rtrim($details, ', ');
+
+        // Save Order
+        $user_id = $_SESSION['user_id'] ?? null;
+        $sql = "INSERT INTO orders (user_id, customer_name, customer_phone, delivery_location, total_price, order_details, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')";
+        $stmt = $pdo->prepare($sql);
+        
+        if ($stmt->execute([$user_id, $name, $phone, $address, $total_price, $details])) {
+            unset($_SESSION['cart']);
+            $cart_items = []; // Clear for display
+            $done = true;
+        } else {
+            $error = "Failed to place order. Please try again.";
+        }
     }
 }
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-<title>Cart</title>
-<link rel="stylesheet" href="css/style.css">
-<!-- Inline CSS for cart page -->
-<style>
-.cart{max-width:800px;margin:40px auto;padding:20px}
-.box{background:#fff;padding:25px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:15px}
-.item{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}
-.total{background:#4e342e;color:#fff;padding:15px;border-radius:8px;text-align:center;font-size:1.3rem;margin-top:15px}
-input,textarea{width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:5px;box-sizing:border-box}
-button{width:100%;padding:12px;background:#4e342e;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:1rem}
-.empty{text-align:center;padding:50px}
-.btn{display:inline-block;padding:10px 20px;background:#4e342e;color:#fff;text-decoration:none;border-radius:5px}
-</style>
+    <title>Cart</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cart.css">
 </head>
 <body>
 
-<!-- ============================================ -->
-<!-- NAVIGATION BAR -->
-<!-- ============================================ -->
 <nav class="navbar">
     <div class="logo">RMS</div>
     <div class="nav-links">
         <a href="index.php">Menu</a>
-        <a href="cart.php">Cart (<?=count($_SESSION['cart']??[])?>)</a>
+        <a href="cart.php" class="active">Cart (<?= isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0 ?>)</a>
+        <?php if(isset($_SESSION['user_id'])):?>
+            <a href="index.php?logout=1" style="color: #e74c3c;">Logout</a>
+        <?php else:?>
+            <a href="login.php">Login</a>
+        <?php endif;?>
     </div>
 </nav>
 
-<!-- ============================================ -->
-<!-- MAIN CART CONTAINER -->
-<!-- ============================================ -->
-<div class="cart">
+<div class="cart-container">
 
-<!-- ============================================ -->
-<!-- ORDER SUCCESS STATE -->
-<!-- ============================================ -->
-<?php if(isset($done)):?>
-<div class="box empty">
-    <h2>✓ Order Placed!</h2>
-    <p>Call: +977 9741706333</p>
-    <a href="index.php" class="btn">Menu</a>
-</div>
-
-<!-- ============================================ -->
-<!-- EMPTY CART STATE -->
-<!-- ============================================ -->
-<?php elseif(empty($cart)):?>
-<div class="box empty">
-    <h2>Cart Empty</h2>
-    <a href="index.php" class="btn">Browse Menu</a>
-</div>
-
-<!-- ============================================ -->
-<!-- CART WITH ITEMS -->
-<!-- ============================================ -->
-<?php else:?>
-
-<!-- Cart Items Box -->
-<div class="box">
-<h2>Cart</h2>
-<?php foreach($cart as $i):?>
-<!-- Single Cart Item -->
-<div class="item">
-    <div>
-        <b><?=$i['name']?></b><br>
-        <small>Qty: <?=$i['qty']?> × Rs.<?=$i['price']?></small>
+<?php if($done): ?>
+    <!-- Success Message -->
+    <div class="cart-box cart-empty">
+        <h2 style="color: #27ae60;">✓ Order Placed!</h2>
+        <p>Your details have been received.</p>
+        <p><strong>Call for confirmation: +977 9741706333</strong></p>
+        <a href="index.php" class="btn">Return to Menu</a>
     </div>
-    <div>
-        <b>Rs.<?=$i['price']*$i['qty']?></b>
-        <!-- Remove Button -->
-        <a href="?remove=<?=$i['id']?>" style="color:red;margin-left:10px">×</a>
+
+<?php elseif(empty($cart_items)): ?>
+    <!-- Empty Cart -->
+    <div class="cart-box cart-empty">
+        <h2>Your Cart is Empty</h2>
+        <p>Looks like you haven't added anything yet.</p>
+        <a href="index.php" class="btn">Browse Menu</a>
     </div>
-</div>
-<?php endforeach;?>
 
-<!-- Total Display -->
-<div class="total">Total: Rs.<?=$total?></div>
-</div>
+<?php else: ?>
+    <!-- Active Cart Display -->
+    <div class="cart-box">
+        <h2>Shopping Cart</h2>
+        
+        <?php foreach($cart_items as $item): ?>
+        <div class="cart-item">
+            <div><strong><?=htmlspecialchars($item['name'])?></strong></div>
+            <div style="color: #666;"><?=htmlspecialchars($item['qty'])?> x Rs.<?=$item['price']?></div>
+            <div><strong>Rs.<?=$item['line_total']?></strong></div>
+            <div style="text-align: right;">
+                <a href="?remove=<?=$item['id']?>" class="remove-link">X</a>
+            </div>
+        </div>
+        <?php endforeach; ?>
+        
+        <div class="cart-total">
+            Total: Rs. <?=$total_price?>
+        </div>
+    </div>
 
-<!-- ============================================ -->
-<!-- CHECKOUT FORM -->
-<!-- ============================================ -->
-<div class="box">
-<h2>Checkout</h2>
-<form method="POST">
-    <!-- Customer Name -->
-    <input type="text" name="name" placeholder="Name" required>
-    
-    <!-- Phone Number -->
-    <input type="tel" name="phone" placeholder="Phone" required>
-    
-    <!-- Delivery Address -->
-    <textarea name="address" placeholder="Address" required></textarea>
-    
-    <!-- Submit Button -->
-    <button name="order">Place Order</button>
-</form>
-</div>
+    <!-- Checkout Form -->
+    <div class="cart-box">
+        <h2>Checkout Details</h2>
+        
+        <?php if($error): ?>
+            <div style="background: #fdf2f2; color: #dc3545; padding: 15px; border-left: 4px solid #dc3545; margin-bottom: 20px; border-radius: 4px;">
+                <strong>Error:</strong> <?=$error?>
+            </div>
+        <?php endif; ?>
 
-<?php endif;?>
-</div>
+        <form method="POST">
+            <input type="text" name="name" placeholder="Full Name" value="<?=htmlspecialchars($name)?>" required>
+            <input type="tel" name="phone" placeholder="Phone Number" value="<?=htmlspecialchars($phone)?>" required>
+            <textarea name="address" placeholder="Delivery Address" required><?=htmlspecialchars($address)?></textarea>
+            
+            <button type="submit" name="order">Confirm Order</button>
+        </form>
+    </div>
+<?php endif; ?>
 
+</div>
 </body>
 </html>

@@ -1,19 +1,19 @@
 -- RMS Database Setup
 -- Restaurant Management System - Complete Database Schema
 
-CREATE DATABASE IF NOT EXISTS rms_db;
-USE rms_db;
+-- Create database
+CREATE DATABASE IF NOT EXISTS np03cy4a240058;
+USE np03cy4a240058;
 
--- Users Table
+-- Users table for customer and admin accounts
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'customer',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    role VARCHAR(50) DEFAULT 'customer'
 );
 
--- Products Table
+-- Products table for menu items
 CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Orders Table
+-- Orders table for customer purchases
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Reviews Table
+-- Reviews table for product feedback
 CREATE TABLE IF NOT EXISTS reviews (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -46,11 +46,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert Sample Admin User (password: admin123)
-INSERT INTO users (email, password, role) VALUES 
-('admin@rms.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
-
--- Insert Sample Products
+-- Insert sample products
 INSERT INTO products (name, description, price, image_url) VALUES
 ('Espresso', 'Strong and bold coffee shot', 150.00, 'uploads/espresso.jpg'),
 ('Cappuccino', 'Espresso with steamed milk foam', 200.00, 'uploads/cappuccino.jpg'),

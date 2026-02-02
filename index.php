@@ -1,53 +1,31 @@
 <?php
-/**
- * INDEX.PHP - Main Menu Page
- * Purpose: Display all menu items, allow searching, adding to cart, and submitting reviews
- * Flow: User browses products → Can search → Add to cart → Submit reviews (if logged in)
- */
+// Main landing page for the coffee shop
+require 'includes/session.php';
+require 'includes/db.php';
 
-// ============================================
-// INITIALIZE SESSION AND DATABASE
-// ============================================
-require 'includes/session.php';  // Start session
-require 'includes/db.php';       // Connect to database
+// Check login status and search parameters
+$is_logged_in = isset($_SESSION['user_id']);
+$cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
+$search_query = trim($_GET['search'] ?? '');
 
-// ============================================
-// CHECK USER LOGIN STATUS
-// ============================================
-$is_logged_in = isset($_SESSION['user_id']);  // Check if user is logged in
-$cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;  // Count items in cart
+// Search Logic
+$search = $_GET['search'] ?? '';
+$products = [];
 
-// ============================================
-// HANDLE SEARCH FUNCTIONALITY
-// ============================================
-$search_query = '';  // Initialize search query
-if (isset($_GET['search'])) {
-    $search_query = trim($_GET['search']);  // Get search term from URL
-}
-
-// ============================================
-// FETCH PRODUCTS FROM DATABASE
-// ============================================
-if (!empty($search_query)) {
-    // Search products by name or description
-    $sql = "SELECT * FROM products WHERE name LIKE ? OR description LIKE ? ORDER BY created_at DESC";
-    $stmt = $pdo->prepare($sql);
-    $search_term = '%' . $search_query . '%';  // Add wildcards for partial matching
-    $stmt->execute([$search_term, $search_term]);
+if ($search) {
+    // Search for products matching name or description
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE ? OR description LIKE ?");
+    $stmt->execute(["%$search%", "%$search%"]);
     $products = $stmt->fetchAll();
 } else {
-    // Get all products if no search
-    $sql = "SELECT * FROM products ORDER BY created_at DESC";
-    $stmt = $pdo->query($sql);
-    $products = $stmt->fetchAll();
+    // Show all products if no search
+    $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
 }
 
-// ============================================
-// HANDLE LOGOUT
-// ============================================
+// Handle user logout
 if (isset($_GET['logout'])) {
-    session_destroy();  // Destroy session
-    header('Location: login.php');  // Redirect to login
+    session_destroy();
+    header('Location: login.php');
     exit;
 }
 ?>
@@ -61,33 +39,26 @@ if (isset($_GET['logout'])) {
 </head>
 <body>
 
-<!-- ============================================ -->
-<!-- NAVIGATION BAR -->
-<!-- ============================================ -->
+<!-- Site navigation -->
 <nav class="navbar">
-    <!-- Left Side: Profile Link + Logo -->
+    <!-- Left Side: Logo -->
     <div style="display: flex; align-items: center;">
-        <?php if ($is_logged_in): ?>
-            <a href="profile.php" style="margin-right: 20px; color: #6f4e37; font-weight: bold;">
-                <i class="fas fa-user-circle"></i> Profile
-            </a>
-        <?php endif; ?>
         <div class="logo">Cups and Mugs</div>
     </div>
     
     <!-- Right Side: Menu, Cart, Login -->
     <div class="nav-links">
-        <a href="home.php" class="active">Menu</a>
+        <a href="index.php" class="active">Menu</a>
         <a href="cart.php">Cart <span class="badge"><?php echo $cart_count; ?></span></a>
-        <?php if (!$is_logged_in): ?>
+        <?php if ($is_logged_in): ?>
+            <a href="index.php?logout=1" style="color: #e74c3c;">Logout</a>
+        <?php else: ?>
             <a href="login.php">Login</a>
         <?php endif; ?>
     </div>
 </nav>
 
-<!-- ============================================ -->
-<!-- MAIN CONTENT CONTAINER -->
-<!-- ============================================ -->
+<!-- Main shop container -->
 <div class="container">
     
     <!-- Hero Section -->
@@ -96,9 +67,7 @@ if (isset($_GET['logout'])) {
         <p>Best Coffee and Food in Baneshwor</p>
     </header>
 
-    <!-- ============================================ -->
-    <!-- SEARCH BAR -->
-    <!-- ============================================ -->
+    <!-- Search interface -->
     <div style="max-width: 600px; margin: 30px auto;">
         <form method="GET" action="home.php" style="display: flex; gap: 10px;">
             <input type="text" 
@@ -126,9 +95,7 @@ if (isset($_GET['logout'])) {
         </p>
     <?php endif; ?>
 
-    <!-- ============================================ -->
-    <!-- MENU GRID - Display All Products -->
-    <!-- ============================================ -->
+    <!-- Product display grid -->
     <div class="menu-grid">
         <?php if (count($products) > 0): ?>
             <?php foreach ($products as $product): ?>
@@ -157,9 +124,7 @@ if (isset($_GET['logout'])) {
                             </form>
                         </div>
                         
-                        <!-- ============================================ -->
-                        <!-- REVIEWS SECTION -->
-                        <!-- ============================================ -->
+                        <!-- Product reviews -->
                         <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ddd;">
                             <small style="font-weight: bold; color: #6f4e37;">Reviews:</small>
                             
@@ -188,9 +153,7 @@ if (isset($_GET['logout'])) {
                                 <p style="font-size: 0.8em; color: #999;">No reviews yet.</p>
                             <?php endif; ?>
 
-                            <!-- ============================================ -->
-                            <!-- WRITE REVIEW (Only for Logged In Users) -->
-                            <!-- ============================================ -->
+                            <!-- Submit a new review -->
                             <?php if ($is_logged_in): ?>
                                 <!-- Button to Show Review Form -->
                                 <button onclick="document.getElementById('review-form-<?php echo $product['id']; ?>').style.display = 'block'" 
@@ -249,6 +212,43 @@ if (isset($_GET['logout'])) {
 <!-- ============================================ -->
 <!-- JAVASCRIPT -->
 <!-- ============================================ -->
-<script src="js/script.js"></script>
+<!-- AJAX Search Script -->
+<script>
+const searchInput = document.querySelector('input[name="search"]');
+const grid = document.querySelector('.menu-grid');
+
+searchInput.addEventListener('keyup', function() {
+    let term = this.value;
+    
+    // Only search if 3 or more characters
+    if (term.length > 2) {
+        fetch('ajax_search.php?q=' + term)
+            .then(response => response.json())
+            .then(products => {
+                if (products.length > 0) {
+                    let html = '';
+                    products.forEach(p => {
+                        html += `
+                        <div class="menu-item">
+                            <img src="${p.image_url || 'placeholder.jpg'}" alt="${p.name}">
+                            <div class="item-details">
+                                <h3>${p.name}</h3>
+                                <p>${p.description}</p>
+                                <div class="price-action">
+                                    <span class="price">Rs. ${p.price}</span>
+                                    <form action="add_to_cart.php" method="POST">
+                                        <input type="hidden" name="product_id" value="${p.id}">
+                                        <button class="btn-add">Add</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                    grid.innerHTML = html;
+                }
+            });
+    }
+});
+</script>
 </body>
 </html>

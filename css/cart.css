@@ -1,0 +1,119 @@
+/* Independent Cart Styles */
+.cart-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.cart-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+    border: 1px solid #eee;
+}
+
+.cart-box h2 {
+    margin-bottom: 25px;
+    color: #4e342e;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+/* 4-Column Grid for Items */
+.cart-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 50px;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-item strong {
+    color: #4e342e;
+}
+
+.remove-link {
+    color: #e74c3c;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.remove-link:hover {
+    color: #c0392b;
+}
+
+/* Total Section */
+.cart-total {
+    background: #4e342e;
+    color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: right;
+    font-size: 1.4rem;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* Form Styling */
+input[type="text"], 
+input[type="tel"], 
+textarea {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box; /* Crucial for width: 100% */
+    font-family: inherit;
+}
+
+input:focus, 
+textarea:focus {
+    border-color: #6f4e37;
+    outline: none;
+}
+
+button[name="order"] {
+    width: 100%;
+    padding: 15px;
+    background-color: #4e342e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button[name="order"]:hover {
+    background-color: #6f4e37;
+}
+
+/* Empty State */
+.cart-empty {
+    text-align: center;
+    padding: 60px;
+}
+
+.btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 25px;
+    background: #4e342e;
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+}

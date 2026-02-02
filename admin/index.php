@@ -1,14 +1,21 @@
 <?php
+// Admin dashboard and order management
 require '../includes/session.php';
 require '../includes/db.php';
 
-// Auth Check
+// Verify admin permissions
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: login.php');
     exit;
 }
 
-// Handle Status Update
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: login.php');
+    exit;
+}
+
+// Handle order status updates from the table
 if (isset($_POST['update_status'])) {
     $order_id = $_POST['order_id'];
     $new_status = $_POST['status'];
@@ -20,7 +27,7 @@ if (isset($_POST['update_status'])) {
     exit;
 }
 
-// Calculate Statistics
+// Calculate business statistics for the dashboard
 $total_sales_stmt = $pdo->query("SELECT SUM(total_price) FROM orders WHERE status = 'completed'");
 $total_sales = $total_sales_stmt->fetchColumn() ?: 0;
 
@@ -39,12 +46,12 @@ $total_products = $total_products_stmt->fetchColumn() ?: 0;
 <head>
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
 <div class="dashboard-container">
+    <!-- Load shared admin sidebar -->
     <?php include 'sidebar.php'; ?>
 
     <div class="main-content">
@@ -53,7 +60,7 @@ $total_products = $total_products_stmt->fetchColumn() ?: 0;
             <span>Welcome, Admin</span>
         </div>
 
-        <!-- Statistics Grid -->
+        <!-- Sales and order statistics grid -->
         <div class="stats-grid">
             <div class="stat-box" style="background: linear-gradient(135deg, #667eea, #764ba2);">
                 <p>Total Sales</p>
@@ -73,7 +80,7 @@ $total_products = $total_products_stmt->fetchColumn() ?: 0;
             </div>
         </div>
 
-        <!-- Recent Orders -->
+        <!-- Latest orders table with status controls -->
         <h3 style="margin-bottom: 15px;">Recent Orders</h3>
         <div style="overflow-x: auto;">
             <table>
@@ -85,12 +92,12 @@ $total_products = $total_products_stmt->fetchColumn() ?: 0;
                         <th class="hide-mobile">Items</th>
                         <th>Total</th>
                         <th>Status</th>
-                        <th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    $orders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")->fetchAll();
+                    // Retrieve 10 most recent orders
+                    $orders = $pdo->query("SELECT * FROM orders ORDER BY id DESC LIMIT 10")->fetchAll();
                     foreach ($orders as $order):
                     ?>
                     <tr>
@@ -105,21 +112,10 @@ $total_products = $total_products_stmt->fetchColumn() ?: 0;
                         </td>
                         <td>Rs. <?php echo number_format($order['total_price']); ?></td>
                         <td>
+                            <!-- Status update form triggers on dropdown change -->
                             <form method="POST" style="display: inline;">
                                 <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                <select name="status" onchange="this.form.submit()" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #ddd; background: <?php 
-                                    echo match($order['status']) {
-                                        'completed' => '#d4edda',
-                                        'cancelled' => '#f8d7da',
-                                        default => '#fff3cd'
-                                    };
-                                ?>; color: <?php 
-                                    echo match($order['status']) {
-                                        'completed' => '#155724',
-                                        'cancelled' => '#721c24',
-                                        default => '#856404'
-                                    };
-                                ?>; font-weight: bold; cursor: pointer;">
+                                <select name="status" onchange="this.form.submit()" class="status-select status-<?php echo $order['status']; ?>">
                                     <option value="pending" <?php echo $order['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
                                     <option value="completed" <?php echo $order['status'] == 'completed' ? 'selected' : ''; ?>>Completed</option>
                                     <option value="cancelled" <?php echo $order['status'] == 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
@@ -127,7 +123,6 @@ $total_products = $total_products_stmt->fetchColumn() ?: 0;
                                 <input type="hidden" name="update_status" value="1">
                             </form>
                         </td>
-                        <td><?php echo date('M j, Y', strtotime($order['created_at'])); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

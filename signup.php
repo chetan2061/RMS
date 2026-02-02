@@ -1,31 +1,32 @@
 <?php
+// Signup logic for new users
 session_start();
 require 'includes/db.php';
 
 $message = '';
 
 try {
-
+    // Process form submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $email = $_POST['email'];
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_password'];
 
-        // Validate email
+        // Validate basic email format
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $message = "Invalid email format.";
         }
-        // Validate password length
+        // Ensure password meets minimum length
         elseif (empty($password) || strlen($password) < 6) {
             $message = "Password must be at least 6 characters.";
         }
-        // Validate password confirmation
+        // Check if passwords match
         elseif ($password !== $confirm_password) {
             $message = "Passwords do not match.";
         }
         else {
-            // Check if email already exists
+            // Check if account already exists
             $checkSql = "SELECT id FROM users WHERE email = ?";
             $checkStmt = $pdo->prepare($checkSql);
             $checkStmt->execute([$email]);
@@ -33,11 +34,10 @@ try {
             if ($checkStmt->rowCount() > 0) {
                 $message = "Email is already registered.";
             } else {
-                // Hash the password for security
+                // Securely hash the password
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-                // Use prepared statement to prevent SQL injection
-                // user role defaults to 'customer' in DB schema usually, or we can explicit it
+                // Insert new customer record
                 $sql = "INSERT INTO users (email, password, role) VALUES (?, ?, 'customer')";
                 $stmt = $pdo->prepare($sql);
                 
@@ -66,6 +66,7 @@ try {
 <body class="user-auth">
 
 <div class="auth-container">
+    <!-- Signup form container -->
     <form method="POST" class="auth-form">
         <h2>Create Account</h2>
         <?php if ($message): ?>

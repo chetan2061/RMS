@@ -5,14 +5,11 @@
  * Flow: Receive product_id → Add/increment in session → Redirect to menu
  */
 
-// ============================================
+
 // START SESSION
-// ============================================
 session_start();
 
-// ============================================
 // ADD PRODUCT TO CART
-// ============================================
 if (isset($_POST['product_id'])) {
     $id = $_POST['product_id'];  // Get product ID from form
     
@@ -21,8 +18,6 @@ if (isset($_POST['product_id'])) {
     $_SESSION['cart'][$id] = ($_SESSION['cart'][$id] ?? 0) + 1;
 }
 
-// ============================================
 // REDIRECT BACK TO MENU
-// ============================================
 header('Location: index.php');
 ?>
