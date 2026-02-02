@@ -41,7 +41,7 @@ Place the project folder inside a PHP-enabled server such as XAMPP htdocs folder
 
 Start Apache and MySQL, then open in browser:
 
-http://localhost/project-folder/public/index.php
+http://localhost/RMS/index.php
 
 --------------------------------------------------
 Technologies Used
