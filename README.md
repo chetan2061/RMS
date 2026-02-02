@@ -1,6 +1,11 @@
 # Restaurant Management System (RMS)
 
 Restaurant Management System (RMS) is a simple web-based application developed using PHP and MySQL to manage restaurant menus and customer orders efficiently. The system provides features for both customers and administrators.
+--------------------------------------------------
+live site
+--------------------------------------------------
+https://student.heraldcollege.edu.np/~np03cy4a240058/RMS/index.php
+
 
 --------------------------------------------------
 Features
