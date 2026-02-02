@@ -1,27 +1,63 @@
-Restaurant Management System (RMS)
-A simple, efficient web-based application for managing restaurant orders and menu items. Built with PHP and MySQL.
+# Restaurant Management System (RMS)
 
+Restaurant Management System (RMS) is a simple web-based application developed using PHP and MySQL to manage restaurant menus and customer orders efficiently. The system provides features for both customers and administrators.
+
+--------------------------------------------------
 Features
-For Customers
-Browse Menu: View all available products with prices and descriptions.
-Live Search: Instantly filter products by name using the search bar (AJAX).
-Shopping Cart: Add items, adjust quantities, and remove items.
-Checkout: Place orders with validation for Name, Phone, and Address.
-For Administrators
-Dashboard: View total sales, order counts, and recent activity.
-Menu Management: Add, Edit, and Delete menu items.
-Order Management: View customer orders and update their status (Pending/Completed/Cancelled).
-Installation & Setup
-Database Setup
+--------------------------------------------------
 
-Create a database (e.g., np03cy4a240058).
-Import the setup.sql file into your database.
-Configuration
+Customer Side
+- Browse menu items with price and description
+- Live search to filter menu items
+- Shopping cart to add or remove items
+- Checkout system with validation for name, phone, and address
 
-Open includes/db.php.
-Update the database credentials ($host, $username, $password, $database) to match your server environment.
-Run
+Administrator Side
+- Dashboard showing orders and sales overview
+- Add, edit, and delete menu items
+- View customer orders
+- Update order status (Pending, Completed, Cancelled)
 
-Host the files on a PHP-enabled server (e.g., XAMPP, Apache).
-Access index.php in your browser.
-Developed for 5CS045 Assessment.
+--------------------------------------------------
+Installation and Setup
+--------------------------------------------------
+
+1. Database Setup
+Create a database (for example: np03cy4a240058).
+Import the provided setup.sql file into the database.
+
+2. Configuration
+Open the file:
+includes/db.php
+
+Update database credentials according to your server:
+- host
+- username
+- password
+- database name
+
+3. Running the Project
+Place the project folder inside a PHP-enabled server such as XAMPP htdocs folder.
+
+Start Apache and MySQL, then open in browser:
+
+http://localhost/project-folder/public/index.php
+
+--------------------------------------------------
+Technologies Used
+--------------------------------------------------
+PHP
+MySQL
+HTML, CSS, JavaScript
+AJAX
+Apache / XAMPP
+
+--------------------------------------------------
+Purpose
+--------------------------------------------------
+This project was developed for academic purposes as part of the 5CS045 assessment.
+
+--------------------------------------------------
+Author
+--------------------------------------------------
+Chetan Singh
